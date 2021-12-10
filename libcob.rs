@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::iter::FromIterator;
 use std::slice;
 
@@ -28,9 +30,8 @@ impl<'a> CobStr<'a> {
         match self.value {
             CobDataType::Value(value) => String::from(value),
             CobDataType::Buffer(ptr) => {
-                let output = unsafe{ 
-                    String::from_iter(slice::from_raw_parts(ptr, STR_SIZE).iter().map(|x| *x as char))
-                };
+                let raw_slice = unsafe { slice::from_raw_parts(ptr, STR_SIZE) };
+                let output = String::from_iter(raw_slice.iter().map(|x| *x as char));
                 String::from(output.trim())
             }
         }
@@ -60,10 +61,8 @@ pub fn cstr(value: &str) -> *const u8{
 }
 
 pub fn cbuffer() -> *mut u8{
-    unsafe {
-        let mut buffer = [0; BUFF_SIZE];
-        let ptr = buffer.as_mut_ptr();
-        std::mem::forget(buffer);
-        ptr
-    }
+    let mut buffer = [0; BUFF_SIZE];
+    let ptr = buffer.as_mut_ptr();
+    std::mem::forget(buffer);
+    ptr
 }

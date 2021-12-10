@@ -1,1 +1,2 @@
-An example of how to use cobol inside rust
+# Spartan
+A set of IRC utilities with the goal of providing a minimalistic irc client and bouncer.

@@ -1,5 +1,5 @@
        identification division.
-       program-id. entry.
+       program-id. hellocobol.
        author. matheus.
        date-written. December 7th 2021
        environment division.
@@ -21,6 +21,7 @@
            display "String: " lin(1:lsin)
       *    display "Say something: " with no advancing
       *    accept loutput
+
            move "Hello from cobol" to loutput
            display "COBOL END"
            exit program.
