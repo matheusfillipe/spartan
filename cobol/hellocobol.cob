@@ -9,7 +9,7 @@
        working-storage section.
        01 ws-comp PIC 9(4)V99.
        linkage section.
-       01 lin PIC A(99).
+       01 lin PIC A(512).
        01 lsin PIC 9(2) value NULLS.
        01 loutput PIC A(512) value NULLS.
        procedure division using lin, lsin, loutput.

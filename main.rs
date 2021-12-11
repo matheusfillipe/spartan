@@ -5,22 +5,26 @@
 mod libcob;
 use libcob::{cbuffer, cstr, CobStr};
 mod ircclient;
-use ircclient::{irc_connect, recv, send};
+use ircclient::{irc_connect, send, recv_loop};
+
+extern "C" {
+    fn entry(name: *const u8, buffer: *const u8);
+}
+
+fn entry_h(msg: &str) -> String {
+    let output = cbuffer();
+    unsafe {
+        entry(cstr(msg), output);
+    }
+    CobStr::from_pointer(output).as_string()
+}
 
 fn main() {
+    // TODO read from arguments
     match irc_connect("irc.dot.org.es", 6667, "rust_bot") {
         Some(mut client) => {
             // irc_send(&mut client, "JOIN #test");
-            loop {
-                match recv(&mut client) {
-                    Ok(msg) => {
-                        println!("{}", msg);
-                    }
-                    Err(_) => {
-                        break;
-                    }
-                }
-            }
+            recv_loop(&mut client, &entry_h);
         }
         None => {
             println!("Error connecting to IRC server");

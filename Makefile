@@ -18,6 +18,12 @@ run: all
 	@echo
 	@LD_LIBRARY_PATH=$(BUILDDIR) ./$(BUILDDIR)/$(TARGET)
 
+release: all
+	@echo "--------------------------------------------------------------------------------------"
+	@echo "BUILDING RELEASE BUILD..."
+	@echo
+	$(RC) -A dead_code -O -C opt-level=3 -C lto -C link-arg=-s -C link-arg=-L$(BUILDDIR) -C link-arg=-lcobol -C link-arg=-lm -C link-arg=-lpthread -C link-arg=-lstdc++ ${ENTRY} -o $@ -L$(CURDIR)/$(BUILDDIR) -lcobol --test
+
 test: $(BUILDDIR)/test
 	@echo "--------------------------------------------------------------------------------------"
 	@echo "RUNNING TESTS TARGET..."

@@ -22,8 +22,7 @@ pub fn recv(stream: &mut TcpStream) -> Result<String, ()> {
     match stream.read(&mut buff) {
         Ok(msg) => {
             let msg = from_utf8(&buff).unwrap();
-            let msg = msg.trim();
-            Ok(msg.to_string())
+            Ok(msg.trim().to_string())
         },
         Err(_) => {
             println!("Error receiving message");
@@ -31,6 +30,36 @@ pub fn recv(stream: &mut TcpStream) -> Result<String, ()> {
         }
     }
 }
+
+pub fn recv_loop(stream: &mut TcpStream, callback: &Fn(&str) -> String) {
+    loop {
+        match recv(stream) {
+            Ok(msg) => {
+                println!("DATA: {:?}", msg);
+                msg.split("\r\n").for_each(|line| {
+                    let m = line.trim();
+                    if m.is_empty() {
+                        return;
+                    }
+                    if m.starts_with("PING") {
+                        send(stream, &format!("PONG {}", m.split(":").take(2).collect::<Vec<_>>()[1]).to_string()).unwrap();
+                        return;
+                    }
+                    println!("Sending to cobol: {:?}", m);
+                    let response = callback(m);
+                    if !response.trim().is_empty() {
+                        println!("Sending Response: {}", response);
+                        send(stream, &msg).unwrap();
+                    }
+                });
+            },
+            Err(_) => {
+                println!("ERROR RECEIVING MESSAGE");
+            }
+        }
+    }
+}
+
 
 pub fn irc_connect(address: &str, port: u16, nick: &str) -> Option<TcpStream> {
     println!("Connecting to {} on port {}", address, port);
@@ -40,7 +69,6 @@ pub fn irc_connect(address: &str, port: u16, nick: &str) -> Option<TcpStream> {
             println!("Authenticating...");
             send(&mut stream, format!("NICK {}", nick).as_str()).unwrap();
             send(&mut stream, format!("USER {} {} {} :{}", nick, nick, nick, nick).as_str()).unwrap();
-            // TODO: ping cookie
             Some(stream)
         },
         Err(e) => {
