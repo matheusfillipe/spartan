@@ -3,9 +3,13 @@
 #![allow(unused_imports)]
 
 mod libcob;
-use libcob::{cbuffer, cstr, CobStr};
+use libcob::{cbuffer, cstr, cstr_fixed, CobStr};
 mod ircclient;
-use ircclient::{irc_connect, send, recv_loop};
+use ircclient::{irc_connect, recv_loop, send};
+
+pub fn nth_arg(n: usize) -> String {
+    std::env::args().nth(n).unwrap()
+}
 
 extern "C" {
     fn entry(name: *const u8, buffer: *const u8);
@@ -13,8 +17,9 @@ extern "C" {
 
 fn entry_h(msg: &str) -> String {
     let output = cbuffer();
+    // TODO why is input screwing up the first bytes on cobol
     unsafe {
-        entry(cstr(msg), output);
+        entry(cstr_fixed(msg), output);
     }
     CobStr::from_pointer(output).as_string()
 }
@@ -42,14 +47,12 @@ mod tests {
 
     #[test]
     fn cobol_hello_world() {
-        println!("BEGIN...");
         let msg = "Message from rust";
         let output = cbuffer();
         unsafe {
             hellocobol(cstr(msg), cstr(&msg.len().to_string()), output);
         }
         let msg = CobStr::from_pointer(output).as_string();
-        println!("\n\nBACK TO RUST");
         println!("Output: \"{}\"", msg);
         assert_eq!(msg, "Hello from cobol");
     }

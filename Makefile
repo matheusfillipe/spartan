@@ -28,7 +28,7 @@ test: $(BUILDDIR)/test
 	@echo "--------------------------------------------------------------------------------------"
 	@echo "RUNNING TESTS TARGET..."
 	@echo
-	@LD_LIBRARY_PATH=$(BUILDDIR) ./$(BUILDDIR)/test
+	@LD_LIBRARY_PATH=$(BUILDDIR) ./$(BUILDDIR)/test --show-output
 
 $(BUILDDIR)/test: ${LIBCOBOL} ${RUSTFILES}
 	@echo "--------------------------------------------------------------------------------------"
