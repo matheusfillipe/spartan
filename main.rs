@@ -7,29 +7,29 @@ use libcob::{cbuffer, cstr, cstr_fixed, CobStr};
 mod ircclient;
 use ircclient::{irc_connect, recv_loop, send};
 
-pub fn nth_arg(n: usize) -> String {
-    std::env::args().nth(n).unwrap()
-}
-
 extern "C" {
     fn entry(name: *const u8, buffer: *const u8);
-}
-
-fn entry_h(msg: &str) -> String {
-    let output = cbuffer();
-    // TODO why is input screwing up the first bytes on cobol
-    unsafe {
-        entry(cstr_fixed(msg), output);
-    }
-    CobStr::from_pointer(output).as_string()
+    fn echo(name: *const u8, buffer: *const u8);
 }
 
 fn main() {
-    // TODO read from arguments
+    let args: Vec<String> = std::env::args().collect();
+    if args.contains(&"--echo".to_string()) {
+        let mut input = String::new();
+        loop {
+            std::io::stdin().read_line(&mut input).unwrap();
+            println!("{}", cobcall!(&echo, &input));
+        }
+    }
+    if args.contains(&"--help".to_string()) {
+        //|| args.len() < 2 {
+        println!("Usage: {} <server> <port>", args[0]);
+        return;
+    }
     match irc_connect("irc.dot.org.es", 6667, "rust_bot") {
         Some(mut client) => {
             // irc_send(&mut client, "JOIN #test");
-            recv_loop(&mut client, &entry_h);
+            recv_loop(&mut client, cobcallable!(&entry));
         }
         None => {
             println!("Error connecting to IRC server");

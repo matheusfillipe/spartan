@@ -12,8 +12,8 @@
        01 lin PIC A(512).
        01 loutput PIC A(512) value NULLS.
        procedure division using lin, loutput.
-           display "COBOL: """ function trim(lin trailing) """"
+           display "COBOL: """function trim(lin trailing)""""
            display " "
-           move "" to loutput
+      *    move lin to loutput
            exit program.
 

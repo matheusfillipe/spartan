@@ -80,3 +80,28 @@ pub fn cbuffer() -> *mut u8 {
     std::mem::forget(buffer);
     ptr
 }
+
+#[macro_export]
+macro_rules! cobcall {
+    ($func:expr, $($arg:expr),*) => {
+        {
+            let buffer = cbuffer();
+            unsafe { $func(cstr_fixed($($arg),*), buffer); }
+            CobStr::from_pointer(buffer).as_string()
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! cobcallable {
+    ($func:expr) => {
+        {
+            &|msg: &str| -> String {
+                let buffer = cbuffer();
+                unsafe { $func(cstr_fixed(msg), buffer); }
+               CobStr::from_pointer(buffer).as_string()
+            }
+        }
+    }
+}
+
